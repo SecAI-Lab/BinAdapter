@@ -7,13 +7,14 @@ import ghidra.app.util.bin.format.elf
 import ghidra.app.util.bin.MemoryByteProvider
 import ghidra.program.model.address.AddressSet
 from ghidra.util.task import ConsoleTaskMonitor
-
+from binascii import hexlify
 import os
 
 
 class GhidraAPI:
-    def __init__(self):
-        self.func_corpus = dict()
+    def __init__(self, store_bytes=False):
+        self.store_bytes = store_bytes
+        self.func_corpus = dict()        
         self._init_state()
         self.linker_funcs = [
             "__libc_csu_init",
@@ -78,14 +79,19 @@ class GhidraAPI:
             addrset = func.getBody()
             code_units = self.listing.getCodeUnits(addrset, True)
             instrs = list()
-            for codeUnit in code_units:
-                i = codeUnit.toString()
-                # i = self.clean(i)
-                if "nop" in i and i != " ":
-                    continue
-                instrs.append(i.lower())
-            # skip functions containing only one instruction, e.g., only jmp
-            if len(instrs) == 1:
+            if self.store_bytes:
+                for codeUnit in code_units:
+                    instrs.append(hexlify(codeUnit.getBytes())) 
+            else:
+                for codeUnit in code_units:
+                    i = codeUnit.toString()
+                    i = self.clean(i)
+                    if "nop" in i and i != " ":
+                        continue
+                    instrs.append(i.lower())
+            
+            # skip functions containing less than 2 instructions
+            if len(instrs) <= 2:
                 continue
 
             code = ", ".join(instrs)
