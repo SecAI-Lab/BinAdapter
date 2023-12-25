@@ -4,7 +4,7 @@ For base model implementation please refer [here](https://github.com/agwaBom/Asm
 
 #### Data preprocessing:
 
-    Install Ghidra open-source disassebler
+    Install Ghidra open-source disassembler
     update GHIDRA_ANALYZEHEADLESS_PATH and BINARY_PATH in parser/run.py
 
     $ cd parser/
