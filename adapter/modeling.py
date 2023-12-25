@@ -9,8 +9,8 @@ class Activation_Function_Class(nn.Module):
     """
     Implementation of various activation function.
     """
-    def __init__(self, hidden_act):
 
+    def __init__(self, hidden_act):
         if hidden_act.lower() == "relu":
             self.f = nn.functional.relu
         elif hidden_act.lower() == "tanh":
@@ -24,7 +24,7 @@ class Activation_Function_Class(nn.Module):
         elif hidden_act.lower() == "gelu":
 
             def gelu_new(x):
-                return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0))) 
+                return x * 0.5 * (1.0 + torch.erf(x / math.sqrt(2.0)))
 
             self.f = gelu_new
         elif hidden_act.lower() == "leakyrelu":
@@ -81,15 +81,14 @@ class Adapter(nn.Module):
             self.adapter_down.apply(self.init_tf_weights)
             self.adapter_up.apply(self.init_tf_weights)
 
-    def forward(self, x):        
+    def forward(self, x):
         down = self.adapter_down(x)
-        up = self.adapter_up(down)      
+        up = self.adapter_up(down)
         output = up
 
         if self.add_layer_norm_after:
             output = self.adapter_norm_after(output)
-        
+
         if not self.residual_before_ln:
-            output = output + x        
+            output = output + x
         return output
-    
