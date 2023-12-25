@@ -1,8 +1,11 @@
-import torch
+from model.asmdepictor.Models import Asmdepictor
+from sklearn.utils import shuffle
 import torch.nn as nn
+import pandas as pd
+import torch
+
 from adapter.adapting import AsmdAdapter
 from config import *
-from model.asmdepictor.Models import Asmdepictor
 
 
 def tokenize(x):
@@ -32,6 +35,25 @@ def load_model(model_path):
             n_position=max_token_seq_len + 3,
         ).to(device)
     return model
+
+
+def preprocessing(src_file, tgt_file, max_token_seq_len):
+    src_data = open(src_file, encoding="utf-8").read().split("\n")
+    tgt_data = open(tgt_file, encoding="utf-8").read().split("\n")
+    src_text_tok = [line.split() for line in src_data]
+    src_tok_concat = [" ".join(tok[0:max_token_seq_len]) for tok in src_text_tok]
+
+    tgt_text_tok = [line.split() for line in tgt_data]
+    tgt_tok_concat = [" ".join(tok[0:max_token_seq_len]) for tok in tgt_text_tok]
+
+    raw_data = {
+        "Code": [line for line in src_tok_concat],
+        "Text": [line for line in tgt_tok_concat],
+    }
+
+    df = pd.DataFrame(raw_data, columns=["Code", "Text"])
+
+    return shuffle(df)
 
 
 def replace_lang_emb(model, shared_code=None, shared_text=None, only_src=False):

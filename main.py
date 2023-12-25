@@ -11,6 +11,15 @@ if __name__ == "__main__":
     pretrained_path = sys.argv[-1]
     print(pretrained_path)
 
+    train_src_dir = "./dataset/train_source.txt"
+    test_src_dir = "./dataset/test_source.txt"
+    train_tgt_dir = "./dataset/train_target.txt"
+    test_tgt_dir = "./dataset/test_target.txt"
+    train_set = preprocessing(train_src_dir, train_tgt_dir, max_token_seq_len)
+    test_set = preprocessing(test_src_dir, test_tgt_dir, max_token_seq_len)
+    train_set.to_json(train_json, orient="records", lines=True)
+    test_set.to_json(test_json, orient="records", lines=True)
+
     model = load_model(pretrained_path)
     model = replace_lang_emb(model)
     voca = AssemblyVoca(text_path=text_voca_path, code_path=code_voca_path)
@@ -82,6 +91,5 @@ if __name__ == "__main__":
         '/path/to/adapter/state/'), strict=False)
     
     model.module.encoder.src_word_emb = torch.load(
-        '/path/to/src_embedding/')
-    
+        '/path/to/src_embedding/')    
     """

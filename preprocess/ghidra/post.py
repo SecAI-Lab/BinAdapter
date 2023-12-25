@@ -12,8 +12,7 @@ import os
 
 
 class GhidraAPI:
-    def __init__(self, store_bytes=False):
-        self.store_bytes = store_bytes
+    def __init__(self):
         self.func_corpus = dict()
         self._init_state()
         self.linker_funcs = [
@@ -25,8 +24,6 @@ class GhidraAPI:
             "__do_global_dtors_aux",
             "__do_global_ctors_aux",
             "frame_dummy",
-            "deregister_tm_clones",
-            "register_tm_clones",
         ]
 
     def _init_state(self):
@@ -45,25 +42,6 @@ class GhidraAPI:
             names.append(section.getName())
         return names
 
-    def clean(self, instr):
-        instr = (
-            instr.replace(" + ", "+")
-            .replace(" - ", "-")
-            .replace(" ", "_")
-            .replace(",_", ", ")
-            .replace("!", "")
-            .replace(",", "_")
-            .replace("#", "")
-            .replace(" #", "")
-            .replace(" ", "")
-            .replace("_-", "-")
-            .replace("_+", "+")
-            .replace("+-", "-")
-            .replace(":", "")
-            .lower()
-        )
-        return instr
-
     def get_exec_functions(self):
         funcs = self.functions
         textset = self.af.getAddressSet(
@@ -80,23 +58,19 @@ class GhidraAPI:
                 continue
             addrset = func.getBody()
             code_units = self.listing.getCodeUnits(addrset, True)
+            instr = getInstructionAt(func.getBody().getMinAddress())
+            if not instr:
+                return
+
             instrs = list()
-            if self.store_bytes:
-                for codeUnit in code_units:
-                    instrs.append(hexlify(codeUnit.getBytes()))
-            else:
-                for codeUnit in code_units:
-                    i = codeUnit.toString()
-                    i = self.clean(i)
-                    if "nop" in i and i != " ":
-                        continue
-                    instrs.append(i.lower())
+            for codeUnit in code_units:
+                instrs.append(hexlify(codeUnit.getBytes()))
 
             # skip functions containing less than 2 instructions
             if len(instrs) <= 2:
                 continue
 
-            code = ", ".join(instrs)
+            code = ",".join(instrs)
             self.func_corpus[code] = f_name
 
     def save_bin_info(self, out_dir):
