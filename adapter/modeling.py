@@ -77,9 +77,9 @@ class Adapter(nn.Module):
         if self.add_layer_norm_after:
             self.adapter_norm_after = nn.LayerNorm(self.input_size)
 
-        if init_tf_weights:
-            self.adapter_down.apply(self.init_tf_weights)
-            self.adapter_up.apply(self.init_tf_weights)
+        # if init_tf_weights:
+        #     self.adapter_down.apply(self.init_tf_weights)
+        #     self.adapter_up.apply(self.init_tf_weights)
 
     def forward(self, x):
         down = self.adapter_down(x)

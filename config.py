@@ -1,15 +1,15 @@
-text_voca_path = "text.pkl"
-code_voca_path = "code.pkl"
-train_json = ""
-test_json = ""
+text_voca_path = "./checkpoint/text.pkl"
+code_voca_path = "./checkpoint/code.pkl"
+train_src_dir = "./dataset/train_source.txt"
+test_src_dir = "./dataset/test_source.txt"
+train_tgt_dir = "./dataset/train_target.txt"
+test_tgt_dir = "./dataset/test_target.txt"
+train_json = "./dataset/train.json"
+test_json = "./dataset/test.json"
 
-src_vocab_size = None
-trg_vocab_size = None
 d_word_vec = 512
 d_model = 512
-src_pad_idx = ""
-trg_pad_idx = ""
-device = ""
+device = "cuda"
 max_token_seq_len = 300
 batch_size = 90
 n_epoch = 20
@@ -26,5 +26,4 @@ scale_emb_or_prj = "emb"
 
 lr_mul = 1.0
 n_warmup_steps = 16000
-
 smoothing = True

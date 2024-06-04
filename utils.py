@@ -3,7 +3,7 @@ from sklearn.utils import shuffle
 import torch.nn as nn
 import pandas as pd
 import torch
-
+from collections import OrderedDict
 from adapter.adapting import AsmdAdapter
 from config import *
 
@@ -12,32 +12,40 @@ def tokenize(x):
     return x.split()
 
 
-def load_model(model_path):
+def load_model(model_path, params):
+    print("Loading ", model_path)
     try:
         model = torch.load(model_path)
     except:
-        model = Asmdepictor.Asmdepictor(
-            src_vocab_size,
-            33546,  # trg_vocab_size,
-            src_pad_idx=src_pad_idx,
-            trg_pad_idx=trg_pad_idx,
-            trg_emb_prj_weight_sharing=proj_share_weight,
-            emb_src_trg_weight_sharing=embs_share_weight,
-            d_k=d_k,
-            d_v=d_v,
-            d_model=d_model,
-            d_word_vec=d_word_vec,
-            d_inner=d_inner_hid,
-            n_layers=n_layers,
-            n_head=n_head,
-            dropout=dropout,
-            scale_emb_or_prj=scale_emb_or_prj,
-            n_position=max_token_seq_len + 3,
-        ).to(device)
+        print("File not found or not loadable!")
+        exit(0)
+
+    model = Asmdepictor(
+        params["src_vocab_size"],
+        33546,  # trg_vocab_size,
+        src_pad_idx=params["src_pad_idx"],
+        trg_pad_idx=params["trg_pad_idx"],
+        trg_emb_prj_weight_sharing=proj_share_weight,
+        emb_src_trg_weight_sharing=embs_share_weight,
+        d_k=d_k,
+        d_v=d_v,
+        d_model=d_model,
+        d_word_vec=d_word_vec,
+        d_inner=d_inner_hid,
+        n_layers=n_layers,
+        n_head=n_head,
+        dropout=dropout,
+        scale_emb_or_prj=scale_emb_or_prj,
+        n_position=max_token_seq_len + 3,
+    ).to(device)
+
+    if isinstance(model, OrderedDict):
+        model.load_state_dict(model_path)
+    model = nn.DataParallel(model)
     return model
 
 
-def preprocessing(src_file, tgt_file, max_token_seq_len):
+def preprocessing(src_file, tgt_file, max_token_seq_len, json_file):
     src_data = open(src_file, encoding="utf-8").read().split("\n")
     tgt_data = open(tgt_file, encoding="utf-8").read().split("\n")
     src_text_tok = [line.split() for line in src_data]
@@ -52,29 +60,30 @@ def preprocessing(src_file, tgt_file, max_token_seq_len):
     }
 
     df = pd.DataFrame(raw_data, columns=["Code", "Text"])
+    df = shuffle(df)
 
-    return shuffle(df)
+    return df.to_json(json_file, orient="records", lines=True)
 
 
-def replace_lang_emb(model, shared_code=None, shared_text=None, only_src=False):
-    src_word_emb = nn.Embedding(src_vocab_size, d_word_vec, padding_idx=src_pad_idx).to(
-        device
-    )
-    trg_word_emb = nn.Embedding(trg_vocab_size, d_word_vec, padding_idx=trg_pad_idx).to(
-        device
-    )
-    trg_word_prj = nn.Linear(d_model, trg_vocab_size, bias=False).to(device)
+def replace_lang_emb(model, params, shared_code=None, shared_text=None, only_src=False):
+    src_word_emb = nn.Embedding(
+        params["src_vocab_size"], d_word_vec, padding_idx=params["src_pad_idx"]
+    ).to(device)
+    trg_word_emb = nn.Embedding(
+        params["trg_vocab_size"], d_word_vec, padding_idx=params["trg_pad_idx"]
+    ).to(device)
+    trg_word_prj = nn.Linear(d_model, params["trg_vocab_size"], bias=False).to(device)
 
     if shared_code:
-        src_word_emb.weight.data[
-            : len(shared_code)
-        ] = model.module.encoder.src_word_emb.weight.data[shared_code]
+        src_word_emb.weight.data[: len(shared_code)] = (
+            model.module.encoder.src_word_emb.weight.data[shared_code]
+        )
         model.module.encoder.src_word_emb = src_word_emb
 
     if shared_text and not only_src:
-        trg_word_emb.weight.data[
-            : len(shared_text)
-        ] = model.module.decoder.trg_word_emb.weight.data[shared_text]
+        trg_word_emb.weight.data[: len(shared_text)] = (
+            model.module.decoder.trg_word_emb.weight.data[shared_text]
+        )
         model.module.decoder.trg_word_emb = trg_word_emb
         model.module.trg_word_prj = trg_word_prj
 

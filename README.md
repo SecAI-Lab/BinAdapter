@@ -2,15 +2,23 @@
 
 For base model implementation please refer [here](https://github.com/agwaBom/AsmDepictor)
 
-#### Data preprocessing:
+
+### Install prerequisites:
+> Working in virtual environment is recommended
+
+    $ pip install -r requirements.txt
+    
+
+### Data preprocessing:
 
     Install Ghidra open-source disassembler
-    update GHIDRA_ANALYZEHEADLESS_PATH and BINARY_PATH in parser/run.py
+    update GHIDRA_ANALYZEHEADLESS_PATH and BINARY_PATH in preprocess/run.py
 
-    $ cd parser/
+    $ cd preprocess/
     $ python run.py
 
-#### Modeling:
+
+### Modeling:
 
     # adding adapter to Asmdepictor
     $ model = AsmdAdapter(pretrained_model)

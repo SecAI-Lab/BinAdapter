@@ -9,19 +9,11 @@ from train import trainIters
 
 if __name__ == "__main__":
     pretrained_path = sys.argv[-1]
-    print(pretrained_path)
 
-    train_src_dir = "./dataset/train_source.txt"
-    test_src_dir = "./dataset/test_source.txt"
-    train_tgt_dir = "./dataset/train_target.txt"
-    test_tgt_dir = "./dataset/test_target.txt"
-    train_set = preprocessing(train_src_dir, train_tgt_dir, max_token_seq_len)
-    test_set = preprocessing(test_src_dir, test_tgt_dir, max_token_seq_len)
-    train_set.to_json(train_json, orient="records", lines=True)
-    test_set.to_json(test_json, orient="records", lines=True)
-
-    model = load_model(pretrained_path)
-    model = replace_lang_emb(model)
+    train_set = preprocessing(
+        train_src_dir, train_tgt_dir, max_token_seq_len, train_json
+    )
+    test_set = preprocessing(test_src_dir, test_tgt_dir, max_token_seq_len, test_json)
     voca = AssemblyVoca(text_path=text_voca_path, code_path=code_voca_path)
 
     code = Field(
@@ -55,12 +47,25 @@ if __name__ == "__main__":
         fields=fields,
     )
 
-    text, code = voca.build(text, code, train_data)
-    voca.save_text(text.vocab)
-    voca.save_code(code.vocab)
+    # text, code = voca.build(text, code, train_data)
+    # voca.save_text(text.vocab)
+    # voca.save_code(code.vocab)
+    text_voca = voca.read(text_voca_path)
+    code_voca = voca.read(code_voca_path)
+    params = {}
 
-    src_vocab_size = len(code.vocab.stoi)
-    trg_vocab_size = len(text.vocab.stoi)
+    params["src_pad_idx"] = code_voca.stoi["<pad>"]
+    params["trg_pad_idx"] = text_voca.stoi["<pad>"]
+    params["src_vocab_size"] = len(code_voca.stoi)
+    params["trg_vocab_size"] = len(text_voca.stoi)
+    print(params)
+
+    model = load_model(pretrained_path, params)
+
+    # Inserting adapters
+    replace_lang_emb(model, params)
+
+    print(model)
 
     train_iterator, valid_iterator, test_iterator = BucketIterator.splits(
         (train_data, valid_data, test_data),
