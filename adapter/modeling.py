@@ -92,3 +92,15 @@ class Adapter(nn.Module):
         if not self.residual_before_ln:
             output = output + x
         return output
+
+
+class Adaptered(torch.nn.Module):
+    def __init__(self, orig_layer, d_model=512):
+        super().__init__()
+        self.orig_layer = orig_layer
+        self.adapter = Adapter(d_model).to(torch.device("cuda"))
+
+    def forward(self, x):
+        orig_out = self.orig_layer(x)
+        output = self.adapter(orig_out)
+        return output

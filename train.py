@@ -9,7 +9,7 @@ import math
 
 from config import *
 from utils import tokenize
-from adapter.adapting import adapter_state_dict
+from adapter.model import adapter_state_dict
 
 
 def cal_performance(

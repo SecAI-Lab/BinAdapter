@@ -3,6 +3,9 @@ import re
 import os
 from capstone import *
 
+# Set BPE operation times
+BPE_OPERATION = 1000
+
 
 class Instruction:
     def __init__(self, arch) -> None:
@@ -179,15 +182,15 @@ def validate_path(dir_name):
 
 
 if __name__ == "__main__":
-    data_prefix = "new"
+    data_prefix = "dataA"
     p = Preprocess(
         prefix=data_prefix,
-        inp_dir="./ghidra/store/new/",
+        inp_dir=f"./ghidra/{data_prefix}/",
         src_file=f"./ghidra/{data_prefix}_src.txt",
         trg_file=f"./ghidra/{data_prefix}_trg.txt",
         bpe_file=f"./ghidra/{data_prefix}_src_bpe.txt",
     )
 
     p.split_src_trg()
-    p.apply_bpe(10000, data_prefix + ".voc")
+    p.apply_bpe(BPE_OPERATION, data_prefix + ".voc")
     p.split_train_test()

@@ -1,3 +1,4 @@
+# path configs
 text_voca_path = "./checkpoint/text.pkl"
 code_voca_path = "./checkpoint/code.pkl"
 train_src_dir = "./dataset/train_source.txt"
@@ -7,6 +8,7 @@ test_tgt_dir = "./dataset/test_target.txt"
 train_json = "./dataset/train.json"
 test_json = "./dataset/test.json"
 
+# model configs
 d_word_vec = 512
 d_model = 512
 device = "cuda"
