@@ -1,6 +1,6 @@
 capstone==5.0.1
-numpy==1.21.1
-scikit_learn==0.24.2
-torch==2.1.1
+numpy==1.24.4
+pandas
+#scikit_learn==0.24.2
 torchtext==0.6.0
 tqdm==4.64.0

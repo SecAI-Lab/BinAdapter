@@ -15,8 +15,8 @@ if __name__ == "__main__":
     test_set = preprocessing(test_src_dir, test_tgt_dir, max_token_seq_len, test_json)
     voca = AssemblyVoca(text_path=text_voca_path, code_path=code_voca_path)
 
-    fields = get_fields()
-    train_data, valid_data, test_data = get_train_test_data()
+    #fields = get_fields()
+    #train_data, valid_data, test_data = get_train_test_data()
 
     params = get_params(voca)
     model = load_model(pretrained_path, params)
