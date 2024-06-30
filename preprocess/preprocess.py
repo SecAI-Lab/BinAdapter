@@ -4,7 +4,7 @@ import os
 from capstone import *
 
 # Set BPE operation times
-BPE_OPERATION = 1000
+BPE_OPERATION = 10000
 
 
 class Instruction:
